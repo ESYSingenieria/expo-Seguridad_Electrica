@@ -38,7 +38,7 @@
     <input type="email" id="correo" required />
 
     <label>Número de Celular:</label>
-    <input type="email" id="correo" />
+    <input type="phone" id="celular" />
 
     <label>Perfil del participante:</label>
     <select id="condicion" required>
@@ -110,6 +110,7 @@
   const nombres = document.getElementById("nombres").value;
   const apellidos = document.getElementById("apellidos").value;
   const correo = document.getElementById("correo").value.trim();
+  const celular = document.getElementById("celular").value.trim();
   const condicionVal = condicion.value;
   const empresa = document.getElementById("empresa").value || null;
   const planta = document.getElementById("planta").value || null;
@@ -134,7 +135,7 @@
 
     // Guardar en Firestore
     await db.collection("registro").add({
-      rut, nombres, apellidos, correo, condicion: condicionVal,
+      rut, nombres, apellidos, correo, celular, condicion: condicionVal,
       empresa, planta, cargo, institucion, carrera, timestamp: new Date()
     });
 
