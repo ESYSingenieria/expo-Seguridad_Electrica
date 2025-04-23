@@ -113,4 +113,33 @@ body {
     background: black;
     transform: rotate(15deg);
   }
-  
+
+@media screen and (max-width: 600px) {
+  .logo-container {
+    gap: 15px;
+  }
+
+  .logo-img {
+    max-height: 50px;
+  }
+
+  .divider-line {
+    height: 60px;
+    transform: rotate(10deg); /* más sutil en pantallas pequeñas */
+  }
+
+  form {
+    padding: 15px 20px;
+    width: 95%;
+  }
+
+  h1, h2 {
+    font-size: 1.3rem;
+    text-align: center;
+  }
+
+  input, select, button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
