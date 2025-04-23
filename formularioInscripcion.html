@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscripción Seminario</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header class="logo-header">
+      <div class="logo-container">
+        <a href="https://www.esys.cl" target="_blank" rel="noopener noreferrer">
+          <img src="https://esys.cl/wp-content/uploads/2024/06/esys-color.png" alt="Logo ESYS" class="logo-img" />
+        </a>
+        <div class="divider-line"></div>
+        <a href="https://www.ubiobio.cl/w/" target="_blank" rel="noopener noreferrer">
+          <img src="Escudo-UBB.png" alt="Escudo UBB" class="logo-img" />
+        </a>
+        <div class="divider-line"></div>
+        <a href="https://www.linkedin.com/company/international-electrical-safety-and-reliability-consultants/" target="_blank" rel="noopener noreferrer">
+          <img src="IESRC-Logo.png" alt="Logo IESRC" class="logo-img" />
+        </a>
+      </div>
+    </header>
+  <h1>1° Expo Internacional de Seguridad Eléctrica</h1>
+  <h2>Formulario de Inscripción</h2>
+  <form id="registroForm">
+    <label>RUT:</label>
+    <input type="text" id="rut" required />
+
+    <label>Nombres:</label>
+    <input type="text" id="nombres" required />
+
+    <label>Apellidos:</label>
+    <input type="text" id="apellidos" required />
+
+    <label>Correo electrónico:</label>
+    <input type="email" id="correo" required />
+
+    <label>Número de Celular:</label>
+    <input type="email" id="correo" />
+
+    <label>Perfil del participante:</label>
+    <select id="condicion" required>
+      <option value="">Selecciona una opción</option>
+      <option value="Estudiante">Estudiante</option>
+      <option value="Profesional">Profesional</option>
+    </select>
+
+    <div id="profesionalExtra" style="display:none;">
+      <label>Empresa / Institución:</label>
+      <input type="text" id="empresa"/>
+
+      <label>Planta / Área:</label>
+      <input type="text" id="planta"/>
+
+      <label>Cargo:</label>
+      <input type="text" id="cargo"/>
+    </div>
+
+    <div id="estudianteExtra" style="display:none;">
+      <label>Institución Educacional:</label>
+      <input type="text" id="institucion"/>
+
+      <label>Carrera:</label>
+      <input type="text" id="carrera"/>
+    </div>
+
+    <button type="submit">Inscribirse</button>
+  </form>
+
+  <p id="mensaje"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBoIQwUVnynJ2O5NuvLXFHM9NMNNAorQ6s",
+    authDomain: "seminarios-esys.firebaseapp.com",
+    projectId: "seminarios-esys",
+    storageBucket: "seminarios-esys.firebasestorage.app",
+    messagingSenderId: "197792502400",
+    appId: "1:197792502400:web:060ac412e076e5d334cc65",
+    measurementId: "G-XMGFNJSTXD"
+  };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const form = document.getElementById("registroForm");
+    const condicion = document.getElementById("condicion");
+    const profesionalExtra = document.getElementById("profesionalExtra");
+    const mensaje = document.getElementById("mensaje");
+
+    condicion.addEventListener("change", () => {
+      profesionalExtra.style.display = condicion.value === "Profesional" ? "block" : "none";
+    });
+    condicion.addEventListener("change", () => {
+      estudianteExtra.style.display = condicion.value === "Estudiante" ? "block" : "none";
+    });
+
+    form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  mensaje.textContent = "";
+
+  const rut = document.getElementById("rut").value;
+  const nombres = document.getElementById("nombres").value;
+  const apellidos = document.getElementById("apellidos").value;
+  const correo = document.getElementById("correo").value.trim();
+  const condicionVal = condicion.value;
+  const empresa = document.getElementById("empresa").value || null;
+  const planta = document.getElementById("planta").value || null;
+  const cargo = document.getElementById("cargo").value || null;
+  const institucion = document.getElementById("institucion").value || null;
+  const carrera = document.getElementById("carrera").value || null;
+
+  try {
+    // Verificar si ya está inscrito
+    const snapshot = await db.collection("registro").where("correo", "==", correo).get();
+
+    if (!snapshot.empty) {
+      mensaje.textContent = "Este correo ya fue inscrito previamente.";
+      mensaje.style.color = "red";
+      setTimeout(() => {
+      mensaje.textContent = "";
+    }, 5000);
+      return;
+    }
+
+    const codigoAleatorio = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+    // Guardar en Firestore
+    await db.collection("registro").add({
+      rut, nombres, apellidos, correo, condicion: condicionVal,
+      empresa, planta, cargo, institucion, carrera, timestamp: new Date()
+    });
+
+    await db.collection("verificacion").doc(codigoAleatorio).set({
+      rut, asistencia: "No asistió"
+    });
+
+    // Generar QR y enviar a correo
+    const qrDataUrl = await QRCode.toDataURL(codigoAleatorio);
+
+    await fetch("https://enviarqr-ytkh3xutaa-uc.a.run.app", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: correo,
+        name: nombres,
+        codigo: codigoAleatorio,
+        qr: qrDataUrl
+      })
+    });
+
+    mensaje.textContent = "✅ Inscripción exitosa. Revisa tu correo, se ha enviado un código que deberás presentar en el seminario.";
+    mensaje.style.color = "green";
+    setTimeout(() => {
+      mensaje.textContent = "";
+    }, 5000);
+    form.reset();
+    profesionalExtra.style.display = "none";
+
+  } catch (error) {
+    console.error("Error al registrar:", error);
+    mensaje.textContent = "❌ Hubo un error al procesar tu inscripción. Intenta nuevamente.";
+    mensaje.style.color = "red";
+    setTimeout(() => {
+      mensaje.textContent = "";
+    }, 5000);
+  }
+});
+
+  </script>
+</body>
+</html>
