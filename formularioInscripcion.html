@@ -146,7 +146,7 @@
     // Generar QR y enviar a correo
     const qrDataUrl = await QRCode.toDataURL(codigoAleatorio);
 
-    await fetch("https://enviarqr-ytkh3xutaa-uc.a.run.app", {
+    await fetch("https://us-central1-seminarios-esys.cloudfunctions.net/enviarQR", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
