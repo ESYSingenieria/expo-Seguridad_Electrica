@@ -113,29 +113,3 @@ body {
     background: black;
     transform: rotate(15deg);
   }
-  
-  .cronograma-container {
-    max-width: 800px;
-    margin: 50px auto;
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .cronograma-texto h3 {
-    font-size: 1.8em;
-    color: #222;
-    margin-bottom: 10px;
-  }
-  
-  .cronograma-texto p {
-    font-size: 1.1em;
-    color: #444;
-    margin-bottom: 20px;
-  }
-  
-  .cronograma-imagen img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
