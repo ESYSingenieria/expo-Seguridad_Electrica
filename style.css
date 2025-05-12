@@ -113,33 +113,50 @@ body {
     background: black;
     transform: rotate(15deg);
   }
-
-@media screen and (max-width: 600px) {
-  .logo-container {
-    gap: 15px;
-  }
-
-  .logo-img {
-    max-height: 50px;
-  }
-
-  .divider-line {
-    height: 60px;
-    transform: rotate(10deg); /* más sutil en pantallas pequeñas */
-  }
-
-  form {
-    padding: 15px 20px;
-    width: 95%;
-  }
-
-  h1, h2 {
-    font-size: 1.3rem;
+  
+  .cronograma-container {
+    max-width: 800px;
+    margin: 50px auto;
     text-align: center;
+    padding: 20px;
+  }
+  
+  .cronograma-texto h3 {
+    font-size: 1.8em;
+    color: #222;
+    margin-bottom: 10px;
+  }
+  
+  .cronograma-texto p {
+    font-size: 1.1em;
+    color: #444;
+    margin-bottom: 20px;
+  }
+  
+  .cronograma-imagen img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  input, select, button {
-    font-size: 14px;
-    padding: 10px;
+  @media (max-width: 1000px) {
+    .cronograma-container {
+      padding: 0px;
+      margin: -10px;
+    }
+  
+    .cronograma-texto h3 {
+      font-size: 1.5em;
+    }
+  
+    .cronograma-texto p {
+      font-size: 1em;
+    }
+  
+    .cronograma-imagen img {
+      max-width: 105%;
+      border-radius: 4px;
+      box-shadow: none;
+    }
   }
-}
