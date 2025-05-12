@@ -71,6 +71,11 @@
 
   <p id="mensaje"></p>
 
+  <div style="text-align: center; margin-top: 40px;">
+    <h3>Detalles del Evento</h3>
+    <img src="CronogramaExpo.png" alt="Cronograma del evento Expo Seguridad Eléctrica" style="max-width: 50%; height: auto; border: 1px solid #ccc; border-radius: 10px;" />
+  </div>  
+
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -160,7 +165,7 @@
       })
     });
 
-    mensaje.textContent = "✅ Inscripción exitosa. Revisa tu correo, se ha enviado un código que deberás presentar en el seminario.";
+    mensaje.textContent = "✅ Inscripción exitosa. Revisa tu bandeja de entrada o tu bandeja de SPAM, se ha enviado un código que deberás presentar en el seminario.";
     mensaje.style.color = "green";
     setTimeout(() => {
       mensaje.textContent = "";
