@@ -93,39 +93,40 @@ body {
     margin-bottom: 0px;
   }
   
+/* === Tu estilo actual para pantallas grandes === */
 .logo-container {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  max-width: 100%;
-  box-sizing: border-box;
+  gap: 40px;
+  position: relative;
+  height: 100px;
 }
 
 .logo-img {
-  max-width: 100px;
-  height: auto;
+  max-height: 80px;
+  width: auto;
 }
 
 .divider-line {
-  width: 2px;
-  height: 40px;
-  background-color: #ccc;
+  width: 1px;
+  height: 100px;
+  background: black;
+  transform: rotate(15deg);
 }
 
+/* === Ajustes SOLO para pantallas pequeñas === */
 @media screen and (max-width: 600px) {
   .logo-container {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .divider-line {
-    display: none;
+    gap: 20px;
   }
 
   .logo-img {
+    max-height: 50px;
     max-width: 80px;
+  }
+
+  .divider-line {
+    height: 60px;
   }
 }
