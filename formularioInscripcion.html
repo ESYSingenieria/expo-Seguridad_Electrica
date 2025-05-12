@@ -28,7 +28,7 @@
     <label>RUT:</label>
     <input type="text" id="rut" required />
 
-    <label>Nombres:</label>
+    <label>Nombre:</label>
     <input type="text" id="nombres" required />
 
     <label>Apellidos:</label>
@@ -36,6 +36,15 @@
 
     <label>Correo electrónico:</label>
     <input type="email" id="correo" required />
+
+    <label>Número de Celular:</label>
+    <input type="number" id="celular" />
+
+    <label>País:</label>
+    <input type="text" id="pais" />
+
+    <label>Ciudad:</label>
+    <input type="text" id="ciudad" />
 
     <label>Número de Celular:</label>
     <input type="number" id="celular" />
@@ -71,10 +80,14 @@
 
   <p id="mensaje"></p>
 
-  <div style="text-align: center; margin-top: 40px;">
-    <h3>Detalles del Evento</h3>
-    <img src="CronogramaExpo.png" alt="Cronograma del evento Expo Seguridad Eléctrica" style="max-width: 50%; height: auto; border: 1px solid #ccc; border-radius: 10px;" />
-  </div>  
+  <div class="cronograma-container">
+    <div class="cronograma-texto">
+      <h3>Detalles del Evento</h3>
+    </div>
+    <div class="cronograma-imagen">
+      <img src="CronogramaExpo.png" alt="Cronograma del evento" />
+    </div>
+  </div> 
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -115,6 +128,8 @@
   const apellidos = document.getElementById("apellidos").value;
   const correo = document.getElementById("correo").value.trim();
   const celular = document.getElementById("celular").value.trim();
+  const pais = document.getElementById("pais").value.trim();
+  const ciudad = document.getElementById("ciudad").value.trim();
   const condicionVal = condicion.value;
   const empresa = document.getElementById("empresa").value || null;
   const planta = document.getElementById("planta").value || null;
@@ -127,7 +142,7 @@
     const snapshot = await db.collection("registro").where("correo", "==", correo).get();
 
     if (!snapshot.empty) {
-      mensaje.textContent = "Este correo ya fue inscrito previamente.";
+      mensaje.textContent = "Este correo ya fue inscrito previamente. Puedes utilizar otro correo.";
       mensaje.style.color = "red";
       setTimeout(() => {
       mensaje.textContent = "";
@@ -139,7 +154,7 @@
 
     // Guardar en Firestore
     await db.collection("registro").add({
-      rut, nombres, apellidos, correo, celular, condicion: condicionVal,
+      rut, nombres, apellidos, correo, celular, pais, ciudad, condicion: condicionVal,
       empresa, planta, cargo, institucion, carrera,
       codigo: codigoAleatorio,   // ← Obligatorio
       timestamp: new Date()
