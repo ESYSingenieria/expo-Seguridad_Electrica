@@ -38,7 +38,7 @@
     <input type="email" id="correo" required />
 
     <label>Número de Celular:</label>
-    <input type="phone" id="celular" />
+    <input type="number" id="celular" />
 
     <label>Perfil del participante:</label>
     <select id="condicion" required>
@@ -74,7 +74,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
   <script>
   const firebaseConfig = {
     apiKey: "AIzaSyBoIQwUVnynJ2O5NuvLXFHM9NMNNAorQ6s",
@@ -136,7 +135,9 @@
     // Guardar en Firestore
     await db.collection("registro").add({
       rut, nombres, apellidos, correo, celular, condicion: condicionVal,
-      empresa, planta, cargo, institucion, carrera, timestamp: new Date()
+      empresa, planta, cargo, institucion, carrera,
+      codigo: codigoAleatorio,   // ← Obligatorio
+      timestamp: new Date()
     });
 
     await db.collection("verificacion").doc(codigoAleatorio).set({
@@ -146,7 +147,7 @@
     // Generar QR y enviar a correo
     const qrDataUrl = await QRCode.toDataURL(codigoAleatorio);
 
-    await fetch("https://us-central1-seminarios-esys.cloudfunctions.net/enviarQR", {
+    await fetch("https://enviarqr-ytkh3xutaa-uc.a.run.app", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -159,11 +160,11 @@
       })
     });
 
-    mensaje.textContent = "✅ Inscripción exitosa. Se ha enviado a tu correo un código que deberás presentar en la expo.";
+    mensaje.textContent = "✅ Inscripción exitosa. Revisa tu correo, se ha enviado un código que deberás presentar en el seminario.";
     mensaje.style.color = "green";
     setTimeout(() => {
       mensaje.textContent = "";
-    }, 7000);
+    }, 5000);
     form.reset();
     profesionalExtra.style.display = "none";
 
@@ -173,7 +174,7 @@
     mensaje.style.color = "red";
     setTimeout(() => {
       mensaje.textContent = "";
-    }, 7000);
+    }, 5000);
   }
 });
 
