@@ -49,6 +49,13 @@
     <label>Número de Celular:</label>
     <input type="number" id="celular" />
 
+    <label>Forma de Asistencia:</label>
+    <select id="forma" required>
+      <option value="">Selecciona una opción</option>
+      <option value="Presencial">Presencial</option>
+      <option value="Online">Online (El enlace se enviara 1 día antes del evento)</option>
+    </select>
+
     <label>Perfil del participante:</label>
     <select id="condicion" required>
       <option value="">Selecciona una opción</option>
@@ -132,6 +139,7 @@
   const cargo = document.getElementById("cargo").value || null;
   const institucion = document.getElementById("institucion").value || null;
   const carrera = document.getElementById("carrera").value || null;
+  const formaVal = forma.value;
 
   try {
     // Verificar si ya está inscrito
@@ -150,7 +158,7 @@
 
     // Guardar en Firestore
     await db.collection("registro").add({
-      rut, nombres, apellidos, correo, celular, pais, ciudad, condicion: condicionVal,
+      rut, nombres, apellidos, correo, celular, pais, ciudad, condicion: condicionVal, forma: formaVal,
       empresa, planta, cargo, institucion, carrera,
       codigo: codigoAleatorio,   // ← Obligatorio
       timestamp: new Date()
