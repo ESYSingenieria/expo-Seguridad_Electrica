@@ -93,23 +93,39 @@ body {
     margin-bottom: 0px;
   }
   
+.logo-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.logo-img {
+  max-width: 100px;
+  height: auto;
+}
+
+.divider-line {
+  width: 2px;
+  height: 40px;
+  background-color: #ccc;
+}
+
+@media screen and (max-width: 600px) {
   .logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 40px;
-    position: relative;
-    height: 100px;
-  }
-  
-  .logo-img {
-    max-height: 80px;
-    width: auto;
+    flex-direction: column;
+    gap: 5px;
   }
 
   .divider-line {
-    width: 1px;
-    height: 100px;
-    background: black;
-    transform: rotate(15deg);
+    display: none;
   }
+
+  .logo-img {
+    max-width: 80px;
+  }
+}
