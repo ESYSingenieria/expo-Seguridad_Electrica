@@ -5,6 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Inscripción Seminario</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Texto introductorio oculto inicialmente */
+    #presencialIntro {
+      display: none;
+      font-weight: bold;
+      margin: 20px 0;
+    }
+    /* Grid para franjas presenciales, oculto inicialmente */
+    #presencialSlots {
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
+      text-align: center;
+      gap: 1.5em 1em;    /* separa filas y columnas */
+      margin-bottom: 20px;
+    }
+    #presencialSlots .slot-label {
+      font-weight: bold;
+      align-self: end;
+      margin-bottom: -15px;
+    }
+    #presencialSlots .slot-checkbox {
+      display: flex;
+      justify-content: center;
+      align-items: start;
+    }
+  </style>
 </head>
 <body>
     <header class="logo-header">
@@ -52,6 +78,28 @@
       <option value="Presencial">Presencial</option>
       <option value="Online">Online (El enlace se enviara 1 día antes del evento)</option>
     </select>
+
+    <div id="presencialIntro">
+      Horario(s) a Elegir (Puede elegir más de uno):
+    </div>
+    <div id="presencialSlots">
+      <div class="slot-label">Jueves AM</div>
+      <div class="slot-label">Jueves PM</div>
+      <div class="slot-label">Viernes AM</div>
+      <div class="slot-label">Viernes PM</div>
+      <div class="slot-checkbox">
+        <input type="checkbox" name="asistenciaPresencial" value="Jueves_AM">
+      </div>
+      <div class="slot-checkbox">
+        <input type="checkbox" name="asistenciaPresencial" value="Jueves_PM">
+      </div>
+      <div class="slot-checkbox">
+        <input type="checkbox" name="asistenciaPresencial" value="Viernes_AM">
+      </div>
+      <div class="slot-checkbox">
+        <input type="checkbox" name="asistenciaPresencial" value="Viernes_PM">
+      </div>
+    </div>
 
     <label>Perfil del participante:</label>
     <select id="condicion" required>
@@ -111,6 +159,9 @@
     const condicion = document.getElementById("condicion");
     const profesionalExtra = document.getElementById("profesionalExtra");
     const mensaje = document.getElementById("mensaje");
+    const forma = document.getElementById("forma");
+    const presencialIntro = document.getElementById("presencialIntro");
+    const presencialSlots = document.getElementById("presencialSlots");
 
     condicion.addEventListener("change", () => {
       profesionalExtra.style.display = condicion.value === "Profesional" ? "block" : "none";
@@ -119,86 +170,127 @@
       estudianteExtra.style.display = condicion.value === "Estudiante" ? "block" : "none";
     });
 
+    forma.addEventListener("change", () => {
+      if (forma.value === "Presencial") {
+        presencialIntro.style.display = "block";
+        presencialSlots.style.display = "grid";
+      } else {
+        presencialIntro.style.display = "none";
+        presencialSlots.style.display = "none";
+        document.querySelectorAll('input[name="asistenciaPresencial"]')
+                .forEach(cb => cb.checked = false);
+      }
+    });
+
     form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  mensaje.textContent = "";
-
-  const rut = document.getElementById("rut").value;
-  const nombres = document.getElementById("nombres").value;
-  const apellidos = document.getElementById("apellidos").value;
-  const correo = document.getElementById("correo").value.trim();
-  const celular = document.getElementById("celular").value.trim();
-  const pais = document.getElementById("pais").value.trim();
-  const ciudad = document.getElementById("ciudad").value.trim();
-  const condicionVal = condicion.value;
-  const empresa = document.getElementById("empresa").value || null;
-  const planta = document.getElementById("planta").value || null;
-  const cargo = document.getElementById("cargo").value || null;
-  const institucion = document.getElementById("institucion").value || null;
-  const carrera = document.getElementById("carrera").value || null;
-  const formaVal = forma.value;
-
-  try {
-    // Verificar si ya está inscrito
-    const snapshot = await db.collection("registro").where("correo", "==", correo).get();
-
-    if (!snapshot.empty) {
-      mensaje.textContent = "Este correo ya fue inscrito previamente. Puedes utilizar otro correo.";
-      mensaje.style.color = "red";
-      setTimeout(() => {
+      e.preventDefault();
       mensaje.textContent = "";
-    }, 5000);
-      return;
-    }
 
-    const codigoAleatorio = Math.random().toString(36).substring(2, 10).toUpperCase();
+      const rut = document.getElementById("rut").value;
+      const nombres = document.getElementById("nombres").value;
+      const apellidos = document.getElementById("apellidos").value;
+      const correo = document.getElementById("correo").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      const pais = document.getElementById("pais").value.trim();
+      const ciudad = document.getElementById("ciudad").value.trim();
+      const condicionVal = condicion.value;
+      const empresa = document.getElementById("empresa").value || null;
+      const planta = document.getElementById("planta").value || null;
+      const cargo = document.getElementById("cargo").value || null;
+      const institucion = document.getElementById("institucion").value || null;
+      const carrera = document.getElementById("carrera").value || null;
+      const formaVal = forma.value;
 
-    // Guardar en Firestore
-    await db.collection("registro").add({
-      rut, nombres, apellidos, correo, celular, pais, ciudad, condicion: condicionVal, forma: formaVal,
-      empresa, planta, cargo, institucion, carrera,
-      codigo: codigoAleatorio,   // ← Obligatorio
-      timestamp: new Date()
+      // Recoger horarios seleccionados
+      let horariosSeleccionados = [];
+      if (formaVal === "Presencial") {
+        horariosSeleccionados = Array.from(
+          document.querySelectorAll('input[name="asistenciaPresencial"]:checked')
+        ).map(cb => cb.value);
+        if (horariosSeleccionados.length === 0) {
+          mensaje.textContent = "Selecciona al menos una franja horaria presencial.";
+          mensaje.style.color = "red";
+          return;
+        }
+      }
+
+      try {
+        // Verificar si ya está inscrito
+        const snapshot = await db.collection("registro").where("correo", "==", correo).get();
+
+        if (!snapshot.empty) {
+          mensaje.textContent = "Este correo ya fue inscrito previamente. Puedes utilizar otro correo.";
+          mensaje.style.color = "red";
+          setTimeout(() => {
+            mensaje.textContent = "";
+          }, 8000);
+          return;
+        }
+
+        const codigoAleatorio = Math.random().toString(36).substring(2, 10).toUpperCase();
+
+        // Guardar en Firestore (incluye vector de horarios)
+        await db.collection("registro").add({
+          rut,
+          nombres,
+          apellidos,
+          correo,
+          celular,
+          pais,
+          ciudad,
+          condicion: condicionVal,
+          forma: formaVal,
+          horariosSeleccionados,   // <-- vector con los checkboxes marcados
+          empresa,
+          planta,
+          cargo,
+          institucion,
+          carrera,
+          codigo: codigoAleatorio,
+          timestamp: new Date()
+        });
+
+        await db.collection("verificacion").doc(codigoAleatorio).set({
+          rut,
+          asistencia: "No asistió"
+        });
+
+        // Generar QR y enviar a correo
+        const qrDataUrl = await QRCode.toDataURL(codigoAleatorio);
+
+        await fetch("https://enviarqr-ytkh3xutaa-uc.a.run.app", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            to: correo,
+            name: nombres,
+            lastname: apellidos,
+            codigo: codigoAleatorio,
+            qr: qrDataUrl
+          })
+        });
+
+        mensaje.textContent = "✅ Inscripción exitosa. Revisa tu bandeja de entrada o tu bandeja de SPAM, se ha enviado un código que deberás presentar en el seminario.";
+        mensaje.style.color = "green";
+        setTimeout(() => {
+          mensaje.textContent = "";
+        }, 8000);
+        form.reset();
+        profesionalExtra.style.display = "none";
+        presencialIntro.style.display = "none";
+        presencialSlots.style.display = "none";
+
+      } catch (error) {
+        console.error("Error al registrar:", error);
+        mensaje.textContent = "❌ Hubo un error al procesar tu inscripción. Intenta nuevamente.";
+        mensaje.style.color = "red";
+        setTimeout(() => {
+          mensaje.textContent = "";
+        }, 8000);
+      }
     });
-
-    await db.collection("verificacion").doc(codigoAleatorio).set({
-      rut, asistencia: "No asistió"
-    });
-
-    // Generar QR y enviar a correo
-    const qrDataUrl = await QRCode.toDataURL(codigoAleatorio);
-
-    await fetch("https://enviarqr-ytkh3xutaa-uc.a.run.app", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        to: correo,
-        name: nombres,
-        lastname: apellidos,
-        codigo: codigoAleatorio,
-        qr: qrDataUrl
-      })
-    });
-
-    mensaje.textContent = "✅ Inscripción exitosa. Revisa tu bandeja de entrada o tu bandeja de SPAM, se ha enviado un código que deberás presentar en el seminario.";
-    mensaje.style.color = "green";
-    setTimeout(() => {
-      mensaje.textContent = "";
-    }, 5000);
-    form.reset();
-    profesionalExtra.style.display = "none";
-
-  } catch (error) {
-    console.error("Error al registrar:", error);
-    mensaje.textContent = "❌ Hubo un error al procesar tu inscripción. Intenta nuevamente.";
-    mensaje.style.color = "red";
-    setTimeout(() => {
-      mensaje.textContent = "";
-    }, 5000);
-  }
-});
 
   </script>
 </body>
