@@ -130,3 +130,8 @@ body {
     height: 60px;
   }
 }
+
+/* pinta de rojo la opción Presencial cuando esté deshabilitada */
+#forma option[value="Presencial"]:disabled {
+  color: red;
+}
