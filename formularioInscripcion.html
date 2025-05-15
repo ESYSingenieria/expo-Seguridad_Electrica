@@ -27,8 +27,16 @@
     }
     #presencialSlots .slot-checkbox {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: start;
+    }
+    .slot-count {
+      font-size: 0.8em;
+      margin-top: 4px;
+    }
+    .slot-checkbox input:disabled + .slot-count {
+      color: #c00;
     }
   </style>
 </head>
@@ -89,15 +97,19 @@
       <div class="slot-label">Viernes PM</div>
       <div class="slot-checkbox">
         <input type="checkbox" name="asistenciaPresencial" value="Jueves_AM">
+        <div class="slot-count" data-slot="Jueves_AM">Cupos: --</div>
       </div>
       <div class="slot-checkbox">
         <input type="checkbox" name="asistenciaPresencial" value="Jueves_PM">
+        <div class="slot-count" data-slot="Jueves_PM">Cupos: --</div>
       </div>
       <div class="slot-checkbox">
         <input type="checkbox" name="asistenciaPresencial" value="Viernes_AM">
+        <div class="slot-count" data-slot="Viernes_AM">Cupos: --</div>
       </div>
       <div class="slot-checkbox">
         <input type="checkbox" name="asistenciaPresencial" value="Viernes_PM">
+        <div class="slot-count" data-slot="Viernes_PM">Cupos: --</div>
       </div>
     </div>
 
@@ -154,6 +166,7 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const cuposRef = db.collection("config").doc("cupos");
 
     const form = document.getElementById("registroForm");
     const condicion = document.getElementById("condicion");
@@ -162,6 +175,36 @@
     const forma = document.getElementById("forma");
     const presencialIntro = document.getElementById("presencialIntro");
     const presencialSlots = document.getElementById("presencialSlots");
+
+    // cargar y mostrar cupos iniciales
+    async function actualizarCupos() {
+      try {
+        const snap = await cuposRef.get();
+        const data = snap.exists ? snap.data() : {};
+        let anyDisponible = false;
+        document.querySelectorAll(".slot-count").forEach(el => {
+          const slot = el.dataset.slot;
+          const n = data[slot] ?? 0;
+          el.textContent = n > 0 ? `Cupos: ${n}` : "Sin cupos";
+          const cb = document.querySelector(`input[value="${slot}"]`);
+          cb.disabled = n <= 0;
+          if (n > 0) anyDisponible = true;
+        });
+        const optPres = document.querySelector('#forma option[value="Presencial"]');
+        optPres.disabled = !anyDisponible;
+        if (!anyDisponible) {
+          optPres.textContent = "Presencial (Sin Cupos)";
+        } else {
+          optPres.textContent = "Presencial";
+        }
+        if (!anyDisponible && forma.value === "Presencial") {
+          forma.value = "";
+          forma.dispatchEvent(new Event('change'));
+        }
+      } catch (e) {
+        console.error("Error cargando cupos:", e);
+      }
+    }
 
     condicion.addEventListener("change", () => {
       profesionalExtra.style.display = condicion.value === "Profesional" ? "block" : "none";
@@ -215,15 +258,23 @@
       }
 
       try {
+        // verificar cupos
+        const cuposSnap = await cuposRef.get();
+        const cupos = cuposSnap.exists ? cuposSnap.data() : {};
+        for (const s of horariosSeleccionados) {
+          if (!cupos[s] || cupos[s] <= 0) {
+            mensaje.textContent = `Sin cupos en ${s.replace("_", " ")}`;
+            mensaje.style.color = "red";
+            return;
+          }
+        }
+
         // Verificar si ya está inscrito
         const snapshot = await db.collection("registro").where("correo", "==", correo).get();
-
         if (!snapshot.empty) {
           mensaje.textContent = "Este correo ya fue inscrito previamente. Puedes utilizar otro correo.";
           mensaje.style.color = "red";
-          setTimeout(() => {
-            mensaje.textContent = "";
-          }, 8000);
+          setTimeout(() => { mensaje.textContent = ""; }, 8000);
           return;
         }
 
@@ -240,7 +291,7 @@
           ciudad,
           condicion: condicionVal,
           forma: formaVal,
-          horariosSeleccionados,   // <-- vector con los checkboxes marcados
+          horariosSeleccionados,
           empresa,
           planta,
           cargo,
@@ -255,14 +306,17 @@
           asistencia: "No asistió"
         });
 
+        // descontar cupos
+        const decrement = firebase.firestore.FieldValue.increment(-1);
+        const updateObj = {};
+        horariosSeleccionados.forEach(s => updateObj[s] = decrement);
+        await cuposRef.update(updateObj);
+
         // Generar QR y enviar a correo
         const qrDataUrl = await QRCode.toDataURL(codigoAleatorio);
-
         await fetch("https://enviarqr-ytkh3xutaa-uc.a.run.app", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: correo,
             name: nombres,
@@ -282,16 +336,17 @@
         presencialIntro.style.display = "none";
         presencialSlots.style.display = "none";
 
+        // actualizar mostrador de cupos
+        actualizarCupos();
       } catch (error) {
         console.error("Error al registrar:", error);
         mensaje.textContent = "❌ Hubo un error al procesar tu inscripción. Intenta nuevamente.";
         mensaje.style.color = "red";
-        setTimeout(() => {
-          mensaje.textContent = "";
-        }, 8000);
+        setTimeout(() => { mensaje.textContent = ""; }, 8000);
       }
     });
 
+    actualizarCupos();
   </script>
 </body>
 </html>
