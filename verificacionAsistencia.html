@@ -7,54 +7,46 @@
   <link rel="stylesheet" href="style.css" />
 
   <style>
-    /* video y resultado siguen igual */
+    /* Reduce márgenes de los encabezados para que queden más juntos */
+    h1, h2, h3 {
+      text-align: center;
+      margin: 0.2em 0;
+    }
+
+    /* Video con menos espacio arriba y abajo, centrado */
     video {
       width: 100%;
-      max-width: 500px;
+      max-width: 400px;
       border: 2px solid #444;
       border-radius: 10px;
-      margin-top: 5px;
-      margin-bottom: 5px;
+      margin: 5px auto;
+      display: block;
     }
+
+    /* Input manual con menos margen superior */
     #codigoManual {
       padding: 10px;
       font-size: 16px;
       width: 240px;
       box-sizing: border-box;
-      margin-top: 5px;
+      margin-top: 2px;
     }
-    #resultado {
-      margin-top: 10px;
-      font-weight: bold;
-      text-align: center;
-    }
-    /* contenedor inline para input + botón */
+
+    /* Contenedor inline con menos espacio arriba */
     .manual-entry {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
-      margin-top: 5px;    /* menos espacio debajo del texto */
-    }
-    /* botón recupera su estilo de style.css */
-    .manual-entry button {
-      width: auto;
-      max-width: none;
-      margin: 0;
+      margin-top: 2px;
     }
 
-    /* Asegura que los títulos queden siempre centrados */
-    h1, h2, h3 {
+    /* Resultado centrado y con menor margen superior */
+    #resultado {
+      margin-top: 5px;
+      font-weight: bold;
       text-align: center;
     }
-
-    /* Ajuste extra para que la entrada manual no tenga tanto margen arriba */
-    @media (max-width: 768px) {
-      h3 + .manual-entry {
-        margin-top: 8px;
-      }
-    }
-
   </style>
 </head>
 <body>
