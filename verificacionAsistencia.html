@@ -7,43 +7,47 @@
   <link rel="stylesheet" href="style.css" />
 
   <style>
-    /* Reduce márgenes de los encabezados para que queden más juntos */
-    h1, h2, h3 {
-      text-align: center;
-      margin: 0.4em 0;
+    /* Reduce márgenes de los títulos para que queden más juntos */
+    h1 {
+      margin: 20px 0 10px;
+    }
+    h2 {
+      margin: 10px 0;
+    }
+    h3 {
+      margin: 15px 0 5px;
     }
 
-    /* Video con menos espacio arriba y abajo, centrado */
+    /* Ajustes del video para compactar */
     video {
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
       border: 2px solid #444;
       border-radius: 10px;
-      margin: 5px auto;
+      margin: 10px auto;    /* sólo 10px arriba y abajo */
       display: block;
     }
 
-    /* Input manual con menos margen superior */
-    #codigoManual {
-      padding: 10px;
-      font-size: 16px;
-      width: 240px;
-      box-sizing: border-box;
-      margin-top: 2px;
-    }
-
-    /* Contenedor inline con menos espacio arriba */
+    /* Entrada manual más cerca del texto */
     .manual-entry {
       display: flex;
       justify-content: center;
       align-items: center;
       gap: 10px;
-      margin-top: 2px;
+      margin-top: 5px;      /* sólo 5px desde el h2 */
     }
 
-    /* Resultado centrado y con menor margen superior */
+    /* Ajuste input */
+    #codigoManual {
+      padding: 8px;
+      font-size: 16px;
+      width: 200px;
+      box-sizing: border-box;
+    }
+
+    /* Resultado sin tanto espacio arriba */
     #resultado {
-      margin-top: 5px;
+      margin: 10px 0 30px;
       font-weight: bold;
       text-align: center;
     }
