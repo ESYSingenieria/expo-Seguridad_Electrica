@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escáner de Código QR - Asistencia</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* video y resultado siguen igual */
+    video {
+      width: 100%;
+      max-width: 500px;
+      border: 2px solid #444;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    #codigoManual {
+      padding: 10px;
+      font-size: 16px;
+      width: 240px;
+      box-sizing: border-box;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+    /* contenedor inline para input + botón */
+    .manual-entry {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;    /* menos espacio debajo del texto */
+    }
+    /* botón recupera su estilo de style.css */
+    .manual-entry button {
+      width: auto;
+      max-width: none;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <header class="logo-header">
+    <div class="logo-container">
+      <a href="https://www.esys.cl" target="_blank" rel="noopener noreferrer">
+        <img src="https://esys.cl/wp-content/uploads/2024/06/esys-color.png" alt="Logo ESYS" class="logo-img" />
+      </a>
+      <div class="divider-line"></div>
+      <a href="https://www.ubiobio.cl/w/" target="_blank" rel="noopener noreferrer">
+        <img src="Escudo-UBB.png" alt="Escudo UBB" class="logo-img" />
+      </a>
+      <div class="divider-line"></div>
+      <a href="https://www.linkedin.com/company/international-electrical-safety-and-reliability-consultants/" target="_blank" rel="noopener noreferrer">
+        <img src="IESRC-Logo.png" alt="Logo IESRC" class="logo-img" />
+      </a>
+    </div>
+  </header>
+
+  <h1>Registro de Asistencia a Seminario</h1>
+  <h3>Escanea tu código QR</h3>
+  <video id="video"></video>
+
+  <h3>O ingresa tu código manualmente:</h3>
+  <div class="manual-entry">
+    <input type="text" id="codigoManual" placeholder="Ej: ABCD1234" />
+    <button onclick="verificarCodigoManual()">Verificar código</button>
+  </div>
+
+  <p id="resultado">Esperando...</p>
+
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBoIQwUVnynJ2O5NuvLXFHM9NMNNAorQ6s",
+      authDomain: "seminarios-esys.firebaseapp.com",
+      projectId: "seminarios-esys",
+      storageBucket: "seminarios-esys.firebasestorage.app",
+      messagingSenderId: "197792502400",
+      appId: "1:197792502400:web:060ac412e076e5d334cc65",
+      measurementId: "G-XMGFNJSTXD"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const videoElem = document.getElementById("video");
+    const resultadoElem = document.getElementById("resultado");
+    const codeReader = new ZXing.BrowserQRCodeReader();
+
+    async function iniciarEscaneo() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === "videoinput");
+        const deviceId = videoDevices[0]?.deviceId;
+        if (!deviceId) {
+          resultadoElem.textContent = "No se encontró cámara disponible.";
+          return;
+        }
+        let ultimo = "";
+        codeReader.decodeFromVideoDevice(deviceId, videoElem, async (result, err) => {
+          if (result) {
+            const codigo = result.getText().trim();
+            if (codigo !== ultimo) {
+              ultimo = codigo;
+              await verificarCodigo(codigo);
+              setTimeout(() => ultimo = "", 5000);
+            }
+          }
+        });
+      } catch (e) {
+        resultadoElem.textContent = "Error al iniciar escáner: " + e;
+      }
+    }
+
+    async function verificarCodigo(codigo) {
+      try {
+        const docRef = db.collection("verificacion").doc(codigo);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+          resultadoElem.textContent = `El código ${codigo} no existe en la base de datos.`;
+        } else {
+          const datos = doc.data();
+          if (datos.asistencia === "Sí asistió") {
+            resultadoElem.textContent = `Código ${codigo} – Ya fue marcado como asistido.`;
+          } else {
+            await docRef.update({ asistencia: "Sí asistió" });
+            resultadoElem.textContent = `Código ${codigo} – ¡Asistencia registrada exitosamente!`;
+          }
+        }
+      } catch {
+        resultadoElem.textContent = "Hubo un error al verificar el código.";
+      } finally {
+        setTimeout(() => resultadoElem.textContent = "Esperando...", 5000);
+      }
+    }
+
+    function verificarCodigoManual() {
+      const codigo = document.getElementById("codigoManual").value.trim();
+      if (!codigo) {
+        resultadoElem.textContent = "Por favor ingresa un código válido.";
+        setTimeout(() => resultadoElem.textContent = "Esperando...", 5000);
+        return;
+      }
+      verificarCodigo(codigo);
+    }
+
+    iniciarEscaneo();
+  </script>
+</body>
+</html>
